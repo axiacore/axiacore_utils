@@ -4,6 +4,7 @@
 # Author: AxiaCore S.A.S
 # Notes:
 # You must run this script in active virtualenv
+# and in the root of project
 ################################################
 
 echo -e "Running pep8 checking .....\n"
