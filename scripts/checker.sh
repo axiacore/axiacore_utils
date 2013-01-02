@@ -20,3 +20,11 @@ if [ $? -eq 0 ] ; then echo -e "Not pylint errors found in modified files"; fi
 echo -e "Running pylint checking in new files .....\n"
 git status | grep 'py$' | grep -v 'modified' | awk '{print $2}' | xargs pylint --rcfile=pylint.rc -r n
 if [ $? -eq 0 ] ; then echo -e "Not pylint errors found in new files"; fi
+
+echo -e "Running checking for print calls in modified files .....\n"
+git status | grep 'py$' | grep 'modified' | awk '{print $3}' | xargs grep -n -H --colour=auto 'print'
+if [ $? -eq 0 ] ; then echo -e "Not print calls found in modified files"; fi
+
+echo -e "Running checking for print calls in new files .....\n"
+git status | grep 'py$' | grep -v 'modified' | awk '{print $2}' | xargs grep -n -H --colour=auto 'print'
+if [ $? -eq 0 ] ; then echo -e "Not print calls found in new files"; fi
