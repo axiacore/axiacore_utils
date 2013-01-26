@@ -1,4 +1,4 @@
-axiacore_utils
+AxiaCore Utils
 ==============
 
-Tools and script to code harder
+Tools and scripts to write beautiful code!
