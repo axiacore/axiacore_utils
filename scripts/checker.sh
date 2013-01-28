@@ -11,6 +11,7 @@
 MODIFIED_EXPR='^M|^ M'
 RENAMED_EXPR='^R|^ R'
 UNTRACKED_EXPR='^\?|^ \?'
+NEW_EXPR='^A|^ A'
 GIT_COMMAND='git status --porcelain'
 PEP8_COMMAND='pep8'
 PYLINT_COMMAND='pylint --rcfile=pylint.rc -r n'
@@ -27,6 +28,9 @@ if [ $? -eq 0 ] ; then echo -e "Not pep8 errors found in new files"; fi
 echo -e "Running pep8 checking in renamed files .....\n"
 ${GIT_COMMAND} | grep 'py$' | egrep "${RENAMED_EXPR}" | awk '{print $4}' | xargs ${PEP8_COMMAND}
 if [ $? -eq 0 ] ; then echo -e "Not pep8 errors found in renamed files"; fi
+echo -e "Running pep8 checking in new files .....\n"
+${GIT_COMMAND} | grep 'py$' | egrep "${NEW_EXPR}" | awk '{print $2}' | xargs ${PEP8_COMMAND}
+if [ $? -eq 0 ] ; then echo -e "Not pep8 errors found in new files"; fi
 
 # pylint checking
 
@@ -39,6 +43,9 @@ if [ $? -eq 0 ] ; then echo -e "Not pylint errors found in new files"; fi
 echo -e "Running pylint checking in renamed files .....\n"
 ${GIT_COMMAND} | grep 'py$' | egrep "${RENAMED_EXPR}" | awk '{print $4}' | xargs ${PYLINT_COMMAND}
 if [ $? -eq 0 ] ; then echo -e "Not pylint errors found in renamed files"; fi
+echo -e "Running pylint checking in new files .....\n"
+${GIT_COMMAND} | grep 'py$' | egrep "${NEW_EXPR}" | awk '{print $2}' | xargs ${PYLINT_COMMAND}
+if [ $? -eq 0 ] ; then echo -e "Not pylint errors found in new files"; fi
 
 # print checking
 
@@ -51,3 +58,6 @@ if [ $? -eq 0 ] ; then echo -e "Not print calls found in new files"; fi
 echo -e "Running checking for print calls in renamed files .....\n"
 ${GIT_COMMAND} | grep 'py$' | egrep "${RENAMED_EXPR}" | awk '{print $4}' | xargs ${PRINT_COMMAND}
 if [ $? -eq 0 ] ; then echo -e "Not print calls found in renamed files"; fi
+echo -e "Running checking for print calls in new files .....\n"
+${GIT_COMMAND} | grep 'py$' | egrep "${NEW_EXPR}" | awk '{print $2}' | xargs ${PRINT_COMMAND}
+if [ $? -eq 0 ] ; then echo -e "Not print calls found in new files"; fi
