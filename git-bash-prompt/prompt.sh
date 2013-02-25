@@ -69,9 +69,9 @@ function get_git_branch {
 	fi
 
         if [ "x"$rn == "x" ]; then
-            echo -e $PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$CURR_BRANCH$staged_changes$unstaged_changes$unchecked_changes
+            echo -e '\['$PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$CURR_BRANCH$staged_changes$unstaged_changes$unchecked_changes'\]'
         else
-            echo -e $PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$rn$PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$CURR_BRANCH$staged_changes$unstaged_changes$unchecked_changes
+            echo -e '\['$PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$rn$PRIM_COL_CLEAN:$GIT_BR_COL_CLEAN$CURR_BRANCH$staged_changes$unstaged_changes$unchecked_changes'\]'
         fi
     fi
 }
