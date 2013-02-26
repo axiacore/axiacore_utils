@@ -30,7 +30,12 @@ function get_git_reponame {
 
 function get_git_branch {
     # Default (non-git) prompt
-    PS1="${SUB_COLOR}[${MAIN_COLOR}\h${SUB_COLOR}:${MAIN_COLOR}\W${SUB_COLOR}]${NO_COLOUR} "
+    venv=$(basename $VIRTUAL_ENV 2> /dev/null)
+    if [[ -n $venv ]]; then
+        venv_prompt="($venv)"
+    else
+        venv_prompt=""
+    fi
 
     unstaged_changes=""
     staged_changes=""
@@ -60,8 +65,8 @@ function get_git_branch {
         else
             GIT_PROMPT="${SUB_COLOR}:$GIT_REPO_COLOR$rn$SUB_COLOR:$GIT_BR_COLOR$CURR_BRANCH$semaphore"
         fi
-        PS1="${SUB_COLOR}[${MAIN_COLOR}\h${SUB_COLOR}${GIT_PROMPT}${SUB_COLOR}:${MAIN_COLOR}\W${SUB_COLOR}]${NO_COLOUR} "
     fi
+    PS1="$venv_prompt${SUB_COLOR}[${MAIN_COLOR}\h${SUB_COLOR}${GIT_PROMPT}${SUB_COLOR}:${MAIN_COLOR}\W${SUB_COLOR}]${NO_COLOUR} "
 }
 
 export PROMPT_COMMAND=get_git_branch
