@@ -1,0 +1,7 @@
+Pasos para usar este prompt:
+
+  * añada la siguiente línea al final de su archivo .bashrc
+
+	source <UBICACION-REPOSITORIO>/axiacore_utils/git-bash-prompt/prompt.sh
+
+Eso es todo.
