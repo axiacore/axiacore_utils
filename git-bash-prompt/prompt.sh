@@ -44,11 +44,10 @@ function get_git_branch {
     staged_changes=""
     unchecked_changes=""
     semaphore=""
-    CURR_BRANCH=$(git branch --no-color 2> /dev/null | grep '\*')
+    CURR_BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if test $? -eq 0 ; then
-        CURR_BRANCH=$(echo "$CURR_BRANCH" | cut --delimiter=" " --fields=2-)
-        if [ "$CURR_BRANCH" == '(no branch)' ]; then
-            CURR_BRANCH=$(git show | head -1 | cut --delimiter=" " --fields=2)
+        if [ "$CURR_BRANCH" == 'HEAD' ]; then
+            CURR_BRANCH=$(git rev-parse HEAD)
         fi
         rn=`get_git_reponame`
         unstaged_changes_format="${YELLOW}*"
