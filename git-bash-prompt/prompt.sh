@@ -24,15 +24,7 @@ GIT_BR_COLOR=$YELLOW
 GIT_REPO_COLOR=$CYAN
 
 function get_git_reponame {
-    v=`realpath .`
-    while [ ! -d "$v/.git" -a "$v" != "/" ]; do
-        v=`dirname "$v"`
-    done
-    if [ ! -d "$v/.git" -a "$v" == "/" ]; then
-        echo 
-    else
-        echo `basename "$v"`
-    fi
+    echo $(basename $(git rev-parse --show-toplevel))
 }
 
 
