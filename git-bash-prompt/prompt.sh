@@ -39,7 +39,7 @@ function get_git_branch {
     CURR_BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if test $? -eq 0 ; then
         if [ "$CURR_BRANCH" == 'HEAD' ]; then
-            CURR_BRANCH=$(git rev-parse HEAD)
+            CURR_BRANCH=$(git rev-parse HEAD)  # not on a branch, show commit sha instead
         fi
         rn=`get_git_reponame`
         unstaged_changes_format="${YELLOW}*"
