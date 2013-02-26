@@ -69,7 +69,7 @@ function get_git_branch {
         else
             GIT_PROMPT="${SUB_COLOR}:$GIT_REPO_COLOR$rn$SUB_COLOR:$GIT_BR_COLOR$CURR_BRANCH$semaphore"
         fi
-        PS1="${SUB_COLOR}[${MAIN_COLOR}\h${SUB_COLOR}${GIT_PROMPT}:${MAIN_COLOR}\W${SUB_COLOR}]${NO_COLOUR} "
+        PS1="${SUB_COLOR}[${MAIN_COLOR}\h${SUB_COLOR}${GIT_PROMPT}${SUB_COLOR}:${MAIN_COLOR}\W${SUB_COLOR}]${NO_COLOUR} "
     fi
 }
 
