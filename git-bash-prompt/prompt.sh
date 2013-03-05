@@ -41,6 +41,7 @@ function get_git_branch {
     staged_changes=""
     unchecked_changes=""
     semaphore=""
+    GIT_PROMPT=""
     CURR_BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if test $? -eq 0 ; then
         if [ "$CURR_BRANCH" == 'HEAD' ]; then
