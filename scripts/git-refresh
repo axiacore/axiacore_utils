@@ -1,0 +1,29 @@
+#!/bin/sh
+
+if [ "$#" -ne 1 ]; then
+    cat <<EOF
+usage: git refresh [branch_name]
+
+Refreshes the given branch from dev
+EOF
+  
+  exit 1
+fi
+
+case "$1" in
+  -h|-?|--help)
+    cat <<EOF
+usage: git refresh [branch_name]
+
+Refreshes the given branch from dev
+EOF
+    exit
+    ;;
+esac
+
+git checkout dev && git pull && git checkout $1 && git merge dev 
+if [ "$?" -ne 0 ]; then
+	cat <<EOF
+Something went wrong, you must check where you left
+EOF
+fi
