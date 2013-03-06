@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# copy this script to <YOUR-REPO>/.git/hooks/commit-msg, and make sure it is
+# executable (chmod +x commit-msg)
+
+# this hook checks your commit message, and adds the branch name if it can't
+# find the branch name in the first line of the commit
+
+commit_msg_file="$1"
+current_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+
+commit_msg=$(head -1 ${commit_msg_file})
+if [[ "$commit_msg" != "$current_branch"* ]]; then
+    # doesn't have the branch name! fix it
+    sed -i "1s/^/${current_branch}  /" $commit_msg_file
+fi
+
