@@ -75,7 +75,7 @@ def main():
                 # Story Points field is customfield_10004
                 points = issue.fields().customfield_10004
                 user = issue.fields().assignee.displayName
-                points_per_project += points
+                points_per_project += points or 0
 
                 str_line = '%s\tPuntos: %s\t%s' % (
                     issue.key,
