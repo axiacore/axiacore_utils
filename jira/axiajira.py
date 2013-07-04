@@ -38,14 +38,13 @@ def parse_params():
     if any([o is None for o in [
         options.date_,
         options.username,
-        options.password,
     ]]):
         parser.print_help()
         parser.error('Todas las opciones son obligatorias')
     try:
         strptime(options.date_, '%Y-%m-%d')
     except ValueError:
-        parser.error('Fecha inválida: {}'.format(options.date_))
+        parser.error(u'Fecha inválida: {}'.format(options.date_))
     return options
 
 
@@ -55,6 +54,8 @@ def main():
     }
     args = parse_params()
 
+    if args.password is None:
+        args.password = raw_input('Password: ')
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
     date = args.date_
 
