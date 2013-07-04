@@ -3,6 +3,7 @@
 # Author: AxiaCore S.A.S. http://axiacore.com
 import optparse
 from time import strptime
+import getpass
 
 from jira.client import JIRA
 
@@ -55,7 +56,7 @@ def main():
     args = parse_params()
 
     if args.password is None:
-        args.password = raw_input('Password: ')
+        args.password = getpass.getpass()
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
     date = args.date_
 
