@@ -74,8 +74,10 @@ def main():
             for issue in issues:
                 # Story Points field is customfield_10004
                 points = issue.fields().customfield_10004
+                if points is None:
+                    continue
                 user = issue.fields().assignee.displayName
-                points_per_project += points or 0
+                points_per_project += points
 
                 str_line = '%s\tPuntos: %s\t%s' % (
                     issue.key,
