@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: AxiaCore S.A.S. http://axiacore.com
-import optparse
-from time import strptime
 import getpass
+import optparse
+
+from time import strptime
 
 from jira.client import JIRA
 
@@ -49,23 +50,6 @@ def parse_params():
     return options
 
 
-def show_indicator(failed_issues, good_issues, indicator_name, status_name):
-    good_points = sum([
-        float(issue.fields().customfield_10004 or 0)
-        for issue in good_issues
-    ])
-    failed_points = sum([
-        float(issue.fields().customfield_10004 or 0)
-        for issue in failed_issues
-    ])
-    if failed_issues:
-        print '-- Puntos en {}: {}'.format(status_name, failed_points)
-        print '-- Indicador {}: {}'.format(
-            indicator_name,
-            failed_points / (failed_points + good_points),
-        )
-
-
 def main():
     options = {
         'server': 'https://axiacore.atlassian.net'
@@ -77,34 +61,43 @@ def main():
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
     date = args.date_
 
+    qa_returned = 0
+    qa_total = 0
+    review_returned = 0
+    review_total = 0
     points_at_axiacore = 0
+
     points_per_person = {}
-    query_template = (
+    done_issues_query = (
         'project = "%s" AND status CHANGED '
         'FROM "Quality Assurance" TO Review ON "%s" '
-        'and "Story Points" IS NOT NULL'
+        'AND "Story Points" IS NOT NULL'
     )
-    reprocess_template = (
+    qa_issues_query = (
+        'project = "%s" AND status WAS "Quality Assurance" ON "%s" '
+        'AND "Story Points" IS NOT NULL'
+    )
+    qa_returned_issues_query = (
         'project = "%s" AND status CHANGED '
         'FROM "Quality Assurance" TO "In Progress" ON "%s" '
         'and "Story Points" IS NOT NULL'
     )
-    finished_template = (
-        'project = "%s" AND status CHANGED '
-        'FROM "Review" TO "Done" ON "%s" '
-        'and "Story Points" IS NOT NULL'
+    review_issues_query = (
+        'project = "%s" AND status WAS "Review" ON "%s" '
+        'AND "Story Points" IS NOT NULL'
     )
-    stopped_template = (
+    review_returned_issues_query = (
         'project = "%s" AND status CHANGED '
         'FROM "Review" TO "Stopped" ON "%s" '
         'and "Story Points" IS NOT NULL'
     )
+
     for project in jira.projects():
-        issues = jira.search_issues(query_template % (project.key, date))
+        done_issues = jira.search_issues(done_issues_query % (project.key, date))
         points_per_project = 0.0
-        if issues:
-            print '* %s' % project.name.encode('utf-8')
-            for issue in issues:
+        if done_issues:
+            print '\n* %s' % project.name.encode('utf-8')
+            for issue in done_issues:
                 # Story Points field is customfield_10004
                 points = issue.fields().customfield_10004
                 user = issue.fields().assignee.displayName
@@ -122,23 +115,66 @@ def main():
                 else:
                     points_per_person[user] = issue.fields().customfield_10004
 
-            print '-- Total puntos: %s' % points_per_project
+            print '-- Puntos pasados a Review: %s' % points_per_project
             points_at_axiacore += points_per_project
 
-        show_indicator(jira.search_issues(
-            reprocess_template % (project.key, date),
-        ), issues, 'QA->Progress', 'Progress')
+        qa_issues = jira.search_issues(qa_issues_query % (project.key, date))
+        qa_returned_issues = jira.search_issues(qa_returned_issues_query % (project.key, date))
+        if qa_issues:
+            print '\n* %s' % project.name.encode('utf-8')
+            returned_points = sum([
+                float(issue.fields().customfield_10004 or 0)
+                for issue in qa_returned_issues
+            ])
+            qa_returned += returned_points
 
-        show_indicator(jira.search_issues(
-            stopped_template % (project.key, date),
-        ), jira.search_issues(
-            finished_template % (project.key, date),
-        ), 'Review->Stopped', 'Stopped')
+            total_points = sum([
+                float(issue.fields().customfield_10004 or 0)
+                for issue in qa_issues
+            ])
+            qa_total += total_points
 
-    print '**Puntos totales por persona:'
+            print '-- Puntos devueltos de QA: %s de %s\t\tEfectividad: %.2f%%' % (
+                returned_points,
+                total_points,
+                100 * (1 - (returned_points / total_points)),
+            )
+
+        review_issues = jira.search_issues(review_issues_query % (project.key, date))
+        review_returned_issues = jira.search_issues(review_returned_issues_query % (project.key, date))
+        if review_issues:
+            print '\n* %s' % project.name.encode('utf-8')
+            returned_points = sum([
+                float(issue.fields().customfield_10004 or 0)
+                for issue in review_returned_issues
+            ])
+            review_returned += returned_points
+
+            total_points = sum([
+                float(issue.fields().customfield_10004 or 0)
+                for issue in review_issues
+            ])
+            review_total += total_points
+
+            print '-- Puntos devueltos de Review: %s de %s\tEfectividad: %.2f%%' % (
+                returned_points,
+                total_points,
+                100 * (1 - (returned_points / total_points)),
+            )
+
+    print '\n\n== Total puntos en AxiaCore:\t\t%s' % points_at_axiacore
+    print 'Puntos totales hechos por persona (%s):' % date
     for key in points_per_person.keys():
         print key.encode('utf-8'), points_per_person[key]
-    print 'Total puntos en axiacore: %s' % points_at_axiacore
+
+    if qa_total:
+        print '== Total efectividad en QA:\t\t%.2f%%' % (
+            100 * (1 - (qa_returned / qa_total)),
+        )
+    if review_total:
+        print '== Total efectividad en Review:\t\t%.2f%%' % (
+            100 * (1 - (review_returned / review_total)),
+        )
 
 if __name__ == '__main__':
     main()
