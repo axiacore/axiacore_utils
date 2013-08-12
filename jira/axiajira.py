@@ -1,6 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: AxiaCore S.A.S. http://axiacore.com
+"""
+You can safely execute it like this:
+
+    python -c "$(curl -fsSL https://raw.github.com/AxiaCore/axiacore_utils/master/jira/axiajira.py)" --username=?? --password=?? --date=??
+
+"""
 import getpass
 import optparse
 
