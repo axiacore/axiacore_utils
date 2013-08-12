@@ -137,7 +137,7 @@ def main():
             print '-- Puntos devueltos de QA: %s de %s\t\tEfectividad: %.2f%%' % (
                 returned_points,
                 total_points,
-                100 * (1 - (returned_points / total_points)),
+                100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
             )
 
         review_issues = jira.search_issues(review_issues_query % (project.key, date))
@@ -159,7 +159,7 @@ def main():
             print '-- Puntos devueltos de Review: %s de %s\tEfectividad: %.2f%%' % (
                 returned_points,
                 total_points,
-                100 * (1 - (returned_points / total_points)),
+                100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
             )
 
     print '\n\n== Total puntos en AxiaCore:\t\t%s' % points_at_axiacore
