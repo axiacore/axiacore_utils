@@ -51,6 +51,14 @@ def parse_params():
         action="store",
         type="string",
     )
+    parser.add_option(
+        '-q',
+        '--quiet',
+        dest='verbose',
+        help=u'Use esta opción para ver resultados globales únicamente',
+        action="store_false",
+        default=True,
+    )
     options, _ = parser.parse_args()
     if options.username is None:
         parser.print_help()
@@ -76,6 +84,7 @@ def main():
         user_list = args.user_list.split(u',')
     else:
         user_list = []
+    verbose = args.verbose
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
     eval_date = args.date_
 
@@ -84,6 +93,7 @@ def main():
     review_returned = 0
     review_total = 0
     points_at_axiacore = 0
+    points_to_count = 0.0
 
     points_per_person = {}
     done_issues_query = (
@@ -114,11 +124,13 @@ def main():
         done_issues = jira.search_issues(done_issues_query % (project.key, eval_date))
         points_per_project = 0.0
         if done_issues:
-            print '\n* %s' % project.name.encode('utf-8')
+            if verbose:
+                print '\n* %s' % project.name.encode('utf-8')
             for issue in done_issues:
                 # Story Points field is customfield_10004
                 points = issue.fields().customfield_10004
                 user = issue.fields().assignee.displayName
+                username = issue.fields().assignee.name
                 points_per_project += points
 
                 str_line = '%s\tPuntos: %s\t%s' % (
@@ -126,20 +138,24 @@ def main():
                     points,
                     user,
                 )
-                print str_line.encode('utf-8')
+                if verbose:
+                    print str_line.encode('utf-8')
 
                 if user in points_per_person:
                     points_per_person[user] += issue.fields().customfield_10004
                 else:
                     points_per_person[user] = issue.fields().customfield_10004
-
-            print '-- Puntos pasados a Review: %s' % points_per_project
+                if not user_list or username in user_list:
+                    points_to_count += issue.fields().customfield_10004
+            if verbose:
+                print '-- Puntos pasados a Review: %s' % points_per_project
             points_at_axiacore += points_per_project
 
         qa_issues = jira.search_issues(qa_issues_query % (project.key, eval_date))
         qa_returned_issues = jira.search_issues(qa_returned_issues_query % (project.key, eval_date))
         if qa_issues:
-            print '\n* %s' % project.name.encode('utf-8')
+            if verbose:
+                print '\n* %s' % project.name.encode('utf-8')
             returned_points = sum([
                 float(issue.fields().customfield_10004 or 0)
                 for issue in qa_returned_issues
@@ -151,17 +167,18 @@ def main():
                 for issue in qa_issues
             ])
             qa_total += total_points
-
-            print '-- Puntos devueltos de QA: %s de %s\t\tEfectividad: %.2f%%' % (
-                returned_points,
-                total_points,
-                100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
-            )
+            if verbose:
+                print '-- Puntos devueltos de QA: %s de %s\t\tEfectividad: %.2f%%' % (
+                    returned_points,
+                    total_points,
+                    100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
+                )
 
         review_issues = jira.search_issues(review_issues_query % (project.key, eval_date))
         review_returned_issues = jira.search_issues(review_returned_issues_query % (project.key, eval_date))
         if review_issues:
-            print '\n* %s' % project.name.encode('utf-8')
+            if verbose:
+                print '\n* %s' % project.name.encode('utf-8')
             returned_points = sum([
                 float(issue.fields().customfield_10004 or 0)
                 for issue in review_returned_issues
@@ -173,17 +190,22 @@ def main():
                 for issue in review_issues
             ])
             review_total += total_points
-
-            print '-- Puntos devueltos de Review: %s de %s\tEfectividad: %.2f%%' % (
-                returned_points,
-                total_points,
-                100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
-            )
+            if verbose:
+                print '-- Puntos devueltos de Review: %s de %s\tEfectividad: %.2f%%' % (
+                    returned_points,
+                    total_points,
+                    100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
+                )
 
     print '\n\n== Total puntos en AxiaCore:\t\t%s' % points_at_axiacore
-    print 'Puntos totales hechos por persona (%s):' % eval_date
-    for key in points_per_person.keys():
-        print key.encode('utf-8'), points_per_person[key]
+    if len(user_list):
+        print '== Total puntos / desarrollador:\t%s' % (
+            points_to_count / (len(user_list))
+        )
+    if verbose:
+        print 'Puntos totales hechos por persona (%s):' % eval_date
+        for key in points_per_person.keys():
+            print key.encode('utf-8'), points_per_person[key]
 
     if qa_total:
         print '== Total efectividad en QA:\t\t%.2f%%' % (
