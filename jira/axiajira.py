@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: AxiaCore S.A.S. http://axiacore.com
 """
-You can safely execute it like this:
+You can safely execute it like this, make sure you have installed jira-python:
 
     python -c "$(curl -fsSL https://raw.github.com/AxiaCore/axiacore_utils/master/jira/axiajira.py)" --username=?? --password=?? --date=??
 
@@ -11,6 +11,7 @@ import getpass
 import optparse
 
 from time import strptime
+from datetime import date
 
 from jira.client import JIRA
 
@@ -22,7 +23,7 @@ def parse_params():
         '--date',
         dest='date_',
         help=u'Fecha para la que se desea obtener el reporte '
-        u'(formato yyyy-mm-dd)',
+        u'(formato yyyy-mm-dd), el día de hoy si no se especifica.',
         action="store",
         type="string",
     )
@@ -42,17 +43,24 @@ def parse_params():
         action="store",
         type="string",
     )
+    parser.add_option(
+        '-l',
+        '--user_list',
+        dest='user_list',
+        help=u'Usuarios para conteo separados por coma',
+        action="store",
+        type="string",
+    )
     options, _ = parser.parse_args()
-    if any([o is None for o in [
-        options.date_,
-        options.username,
-    ]]):
+    if options.username is None:
         parser.print_help()
-        parser.error('Todas las opciones son obligatorias')
+        parser.error('Su usuario es obligatorio')
     try:
         strptime(options.date_, '%Y-%m-%d')
     except ValueError:
         parser.error(u'Fecha inválida: {}'.format(options.date_))
+    except TypeError:
+        options.date_ = date.today()
     return options
 
 
@@ -64,8 +72,12 @@ def main():
 
     if args.password is None:
         args.password = getpass.getpass()
+    if args.user_list:
+        user_list = args.user_list.split(u',')
+    else:
+        user_list = []
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
-    date = args.date_
+    eval_date = args.date_
 
     qa_returned = 0
     qa_total = 0
@@ -99,7 +111,7 @@ def main():
     )
 
     for project in jira.projects():
-        done_issues = jira.search_issues(done_issues_query % (project.key, date))
+        done_issues = jira.search_issues(done_issues_query % (project.key, eval_date))
         points_per_project = 0.0
         if done_issues:
             print '\n* %s' % project.name.encode('utf-8')
@@ -124,8 +136,8 @@ def main():
             print '-- Puntos pasados a Review: %s' % points_per_project
             points_at_axiacore += points_per_project
 
-        qa_issues = jira.search_issues(qa_issues_query % (project.key, date))
-        qa_returned_issues = jira.search_issues(qa_returned_issues_query % (project.key, date))
+        qa_issues = jira.search_issues(qa_issues_query % (project.key, eval_date))
+        qa_returned_issues = jira.search_issues(qa_returned_issues_query % (project.key, eval_date))
         if qa_issues:
             print '\n* %s' % project.name.encode('utf-8')
             returned_points = sum([
@@ -146,8 +158,8 @@ def main():
                 100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
             )
 
-        review_issues = jira.search_issues(review_issues_query % (project.key, date))
-        review_returned_issues = jira.search_issues(review_returned_issues_query % (project.key, date))
+        review_issues = jira.search_issues(review_issues_query % (project.key, eval_date))
+        review_returned_issues = jira.search_issues(review_returned_issues_query % (project.key, eval_date))
         if review_issues:
             print '\n* %s' % project.name.encode('utf-8')
             returned_points = sum([
@@ -169,7 +181,7 @@ def main():
             )
 
     print '\n\n== Total puntos en AxiaCore:\t\t%s' % points_at_axiacore
-    print 'Puntos totales hechos por persona (%s):' % date
+    print 'Puntos totales hechos por persona (%s):' % eval_date
     for key in points_per_person.keys():
         print key.encode('utf-8'), points_per_person[key]
 
