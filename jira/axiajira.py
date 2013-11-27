@@ -9,6 +9,7 @@ You can safely execute it like this, make sure you have installed jira-python:
 """
 import getpass
 import optparse
+import json
 
 from time import strptime
 from datetime import date
@@ -59,6 +60,14 @@ def parse_params():
         action="store_false",
         default=True,
     )
+    parser.add_option(
+        '-j',
+        '--json',
+        dest='format_json',
+        help=u'Use esta opción para ver resultados en json',
+        action="store_true",
+        default=False,
+    )
     options, _ = parser.parse_args()
     if options.username is None:
         parser.print_help()
@@ -85,6 +94,9 @@ def main():
     else:
         user_list = []
     verbose = args.verbose
+    simple = args.format_json
+    if simple:
+        verbose = False
     jira = JIRA(basic_auth=(args.username, args.password), options=options)
     eval_date = args.date_
 
@@ -197,6 +209,16 @@ def main():
                     100 * (1 - (0 if total_points == 0 else returned_points / total_points)),
                 )
 
+    if simple:
+        result = {
+            'total_points': points_at_axiacore,
+            'qa_efectivity': 100 * (1 - (qa_returned / qa_total)),
+            'review_efectivity': 100 * (1 - (review_returned / review_total)),
+        }
+        if len(user_list):
+            result['points_per_devel'] = points_to_count / (len(user_list))
+        print json.dumps(result)
+        return 0
     print '\n\n== Total puntos en AxiaCore:\t\t%s' % points_at_axiacore
     if len(user_list):
         print '== Total puntos / desarrollador:\t%s' % (
