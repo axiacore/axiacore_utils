@@ -68,16 +68,67 @@ def parse_params():
         action="store_true",
         default=False,
     )
+    parser.add_option(
+        '-f',
+        '--keyfile',
+        dest='keyfile',
+        help=u'Llave privada RSA1 (.pem)',
+        action="store",
+        type="string",
+    )
+    parser.add_option(
+        '-k',
+        '--key',
+        dest='consumerkey',
+        help=u'Consumer Key para OAuth',
+        action="store",
+        type="string",
+    )
+    parser.add_option(
+        '-t',
+        '--token',
+        dest='accesstoken',
+        help=u'Access Token para OAuth',
+        action="store",
+        type="string",
+    )
+    parser.add_option(
+        '-s',
+        '--secret',
+        dest='accesstokensecret',
+        help=u'Access Token Secret para OAuth',
+        action="store",
+        type="string",
+    )
     options, _ = parser.parse_args()
-    if options.username is None:
+    oauth_options_enabled = [ o is not None for o in [
+        options.keyfile,
+        options.consumerkey,
+        options.accesstoken,
+        options.accesstokensecret,
+    ]]
+    if options.username is None and not all(oauth_options_enabled):
         parser.print_help()
-        parser.error('Su usuario es obligatorio')
+        parser.error('Por favor especifique todas las credenciales para autenticación oauth -f -k -t -s')
+    elif options.username and any(oauth_options_enabled):
+        parser.print_help()
+        parser.error('Por favor especifique únicamente usuario o de forma excluyente las opciones oauth -f -k -t -s')
+    options.is_oauth = True
+    if options.username:
+        options.is_oauth = False
     try:
         strptime(options.date_, '%Y-%m-%d')
     except ValueError:
         parser.error(u'Fecha inválida: {}'.format(options.date_))
     except TypeError:
         options.date_ = date.today()
+    if options.keyfile:
+        try:
+            with open(options.keyfile,  'r') as key_cert_file:
+                key_cert_data = key_cert_file.read()
+            options.key_cert_data = key_cert_data
+        except IOError:
+           print 'Oh dear.'
     return options
 
 
@@ -87,8 +138,6 @@ def main():
     }
     args = parse_params()
 
-    if args.password is None:
-        args.password = getpass.getpass()
     if args.user_list:
         user_list = args.user_list.split(u',')
     else:
@@ -97,7 +146,19 @@ def main():
     simple = args.format_json
     if simple:
         verbose = False
-    jira = JIRA(basic_auth=(args.username, args.password), options=options)
+    if args.is_oauth:
+        oauth_dict = {
+            'access_token': args.accesstoken,
+            'access_token_secret': args.accesstokensecret,
+            'consumer_key': args.consumerkey,
+            'key_cert': args.key_cert_data,
+        }
+        jira = JIRA(oauth=oauth_dict, options=options)
+    else:
+        if args.password is None:
+            args.password = getpass.getpass()
+        jira = JIRA(basic_auth=(args.username, args.password), options=options)
+
     eval_date = args.date_
 
     qa_returned = 0
