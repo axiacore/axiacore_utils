@@ -180,7 +180,7 @@ def main():
     )
     qa_returned_issues_query = (
         'project = "%s" AND status CHANGED '
-        'FROM "Quality Assurance" TO "In Progress" ON "%s" '
+        'FROM "Quality Assurance" TO "Stopped" ON "%s" '
         'and "Story Points" IS NOT NULL'
     )
     review_issues_query = (
