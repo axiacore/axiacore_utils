@@ -12,4 +12,3 @@ alias -- -="cd -"
 # Shortcuts
 alias d="cd ~/Dropbox/"
 alias ws="cd ~/Dropbox/workspace/"
-
