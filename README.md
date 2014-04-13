@@ -5,7 +5,7 @@ Tools and scripts to write beautiful code!
 
 ## Usage
 
-The installation of these utilities may vary depending on their nature. But most likely you can  use them by just copying the file you want to your `~` root folder.
+The installation of these utilities may vary depending on their nature, but most likely you can  use them by just copying the file you want to your `~` root folder.
 
 ```bash
 # Clone the repo
