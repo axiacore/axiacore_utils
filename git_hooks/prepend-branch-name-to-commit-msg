@@ -18,6 +18,6 @@ commit_msg=$(head -1 ${commit_msg_file})
 if [[ "$commit_msg" != "$current_branch"* ]]; then
     # doesn't have the branch name! fix it
     sed -i "1s/^/${current_branch}  /" $commit_msg_file
-    # On OSX you should use: sed -i "1s/^/${current_branch}  /" $commit_msg_file
+    # On OSX you should use: sed -i '' "1s/^/${current_branch}  /" $commit_msg_file
 fi
 
