@@ -3,11 +3,6 @@
 # copy this script to <YOUR-REPO>/.git/hooks/commit-msg, and make sure it is
 # executable (chmod +x commit-msg)
 
-# To make it sitewide you just need to first make sure you have a template dir
-# i.e.: ~/.git-templates/hooks/commit-msg
-# If you already have your git repo, go to init and run (git init) to make
-# sure it now holds commit-msg
-
 # this hook checks your commit message, and adds the branch name if it can't
 # find the branch name in the first line of the commit
 
@@ -17,7 +12,9 @@ current_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
 commit_msg=$(head -1 ${commit_msg_file})
 if [[ "$commit_msg" != "$current_branch"* ]]; then
     # doesn't have the branch name! fix it
-    sed -i "1s/^/${current_branch}  /" $commit_msg_file
-    # On OSX you should use: sed -i '' "1s/^/${current_branch}  /" $commit_msg_file
+    if [[ `uname` == "Darwin" ]]; then
+        sed -i '' "1s/^/${current_branch}  /" $commit_msg_file
+    else
+        sed -i "1s/^/${current_branch}  /" $commit_msg_file
+    fi
 fi
-
