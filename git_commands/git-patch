@@ -1,0 +1,33 @@
+#!/bin/bash
+# This snippet updates numbers according to versioning major.minor.patch
+# just do
+# git patch
+# git minor
+# git major
+# It will 
+# * update your files package.json and bower.json or VERSION
+# * commit the changes
+# * create the tag in your VCS
+# * tell you to push with --tags
+
+ACTION=`basename $0 | sed 's%git-%%g'`
+if [ -f package.json ] && [ -f bower.json ]
+  then
+    FILES="package.json bower.json"
+elif [ -f VERSION ]
+  then
+    FILES="VERSION"
+else
+    echo "Make sure you are in your root repository path"
+    exit 1;
+fi
+bumpversion --tag --commit $ACTION $FILES 
+echo $?
+if [ $? -ne 0 ]
+  then
+     echo "Error: Please install bumpversion with"
+     echo "pip install bumpversion"
+else
+  echo "Please make sure you execute"
+  echo "git push origin --tags"
+fi
