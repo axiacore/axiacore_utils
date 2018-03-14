@@ -6,5 +6,12 @@
 
 echo "Generating jshint report..."
 mkdir -p reports
-jshint --jslint-reporter app/static/js/ | sed -E 's?<file name="(.*)\?">?<file name="'"`pwd`"'/\1">?' > reports/jshint.xml
+
+if [ -f app/static/es6/ ]; then
+    js_path=app/static/es6/
+else
+    js_path=app/static/js/
+fi
+
+jshint --jslint-reporter $js_path | sed -E 's?<file name="(.*)\?">?<file name="'"`pwd`"'/\1">?' > reports/jshint.xml
 echo "Done"
